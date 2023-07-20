@@ -5,7 +5,7 @@ import random
 import time
 import requests
 import json
-from share_package import components, wxpusher
+import components, wxpusher
 from requests.packages import urllib3
 
 urllib3.disable_warnings()  # 关闭https的ssl证书警告
