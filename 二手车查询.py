@@ -1,12 +1,16 @@
 """
 由于使用https，所以需要以管理员身份运行
 """
+import os
 import random
 import time
 import requests
 import json
-import components, wxpusher
+
+from share_package import components, wxpusher
 from requests.packages import urllib3
+from selenium import webdriver
+from selenium.webdriver.firefox.options import Options
 
 urllib3.disable_warnings()  # 关闭https的ssl证书警告
 
@@ -18,19 +22,35 @@ PROXIES = [{"http": "http://127.0.0.1:9090", "https": "http://127.0.0.1:9090"}, 
 NOTIFY_URL = "https://www.tesla.cn/inventory/used/my?Province=CN&FleetSalesRegions=CN&arrangeby=plh&zip=&range=0"
 
 headers_computer = {
-    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:109.0) Gecko/20100101 Firefox/109.0",
+    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:109.0) Gecko/20100101 Firefox/119.0",
     "Accept-Language": "zh-CN,zh;q=0.8,zh-TW;q=0.7,zh-HK;q=0.5,en-US;q=0.3,en;q=0.2",
     "Accept-Encoding": "gzip, deflate",
     "Accept": "*/*",
+    "Connection": "keep-alive",
     "host": "www.tesla.cn",
     "Referer": "https://www.tesla.cn/inventory/used/my?Province=CN&FleetSalesRegions=CN&arrangeby=plh&zip=&range=0",
-    "Cookie": 'gdp_user_id=gioenc-7300165g%2C494g%2C55da%2Ccad1%2Cdcaebc0b247d; b0e25bc027704bfe_gdp_sequence_ids=%7B%22globalKey%22%3A31%2C%22VISIT%22%3A2%2C%22PAGE%22%3A4%2C%22CUSTOM%22%3A5%2C%22VIEW_CLICK%22%3A23%7D; RT="z=1&dm=www.tesla.cn&si=5edda009-420c-4771-abb7-c3977db8f8a7&ss=ljdvtw6t&sl=0&tt=0"; coin_auth=38cbb71b2bc836f1ac066e5a5b7a5ac4; ip_info={"ip":"218.4.161.210","location":{"latitude":31.4482,"longitude":121.1007},"region":{"longName":"Jiangsu","regionCode":"JS"},"city":"Taicang","country":"China","countryCode":"CN","postalCode":""}; AKA_A2=A; ak_bmsc=E0F075543C3F0C8814B5251C660FBA1B~000000000000000000000000000000~YAAQJuBb2urBgeWIAQAAEJBz+xRiNgLElIGI5qKci3ih2fp5ppRkvAY49J1MonKcnopx3LLPIDeeUKUDlJR/tY7uZXluoRQiCCvon/9S9RYiqjwAX7WGNU9wYywXQLrNWcFo+gIBruch/H48+RmZSK4fjTGpjZXoHL+j616RWlKQJtisL0aRUgOhin3k9m2BDsZo1yAfkvpVVRUQUliiGMVtLoOWwKOvu5AZWVVDNIXyZCQhvLNRKh7xQZULZvPEbR+5kqwNqcgWbA0X4xx3OabFF3BKt+FSK/TH9RieAfgT5SwTkQ+N/QCag2rRRdhT0Nwb64vphpK5f6X/B2dabz7S91F/jSIqZW0gV7bfhRPE0d9D2l8VIBiT0UwKW5zCGhC/LIanBLNrkBgIPPUDLrWE75gdJTfWm+05VV8kS/XlDIYAqsuSGALDykBc0Ffc6qfgff4lQwlBx5ZgHW4h85SZd9nmevP9GXiacQ==; bm_sv=C33DE4CB6F68831F0705CF0A245723FE~YAAQJuBb2vTBgeWIAQAAUJFz+xQJp3OFH7YTyE36ROf6Mfv6H6lkMnJaLnP+qaCqT49r30zHhrWh+GLkpUN0+yURV8qxNJFlNalJox2Pz4nGhzj9i6D7Qpm38GI7cZVV2rHKZrdUZuG1jSj+OrS3gIiCeDFPZsjIY36yPdXnSXenWj7g0BRXgypB8ZNbbIWrL96dKD8Z8lVj8RikLym60aEgh9MnHK+dC67BKbLz+2tCb8LTaYlVyaBkgw+e2g==~1',
+    "Cookie": '',
     "Sec-Fetch-Dest": "empty",
     "Sec-Fetch-Mode": "cors",
     "Sec-Fetch-Site": "same-origin",
     "Te": "trailers"
 }
 host = 'https://www.tesla.cn/inventory/api/v1/inventory-results?query=%7B%22query%22%3A%7B%22model%22%3A%22my%22%2C%22condition%22%3A%22used%22%2C%22options%22%3A%7B%22FleetSalesRegions%22%3A%5B%22CN%22%5D%7D%2C%22arrangeby%22%3A%22Price%22%2C%22order%22%3A%22asc%22%2C%22market%22%3A%22CN%22%2C%22language%22%3A%22zh%22%2C%22super_region%22%3A%22north%20america%22%2C%22lng%22%3A121.1007%2C%22lat%22%3A31.4482%2C%22zip%22%3A%22%22%2C%22range%22%3A0%7D%2C%22offset%22%3A0%2C%22count%22%3A50%2C%22outsideOffset%22%3A0%2C%22outsideSearch%22%3Afalse%7D '
+
+
+def get_cookie():
+    os.environ['PATH'] = os.environ.get('PATH') + ";D:\\python_code"  # 把驱动所在的目录加入到环境变量中，以便程序调用
+    options = Options()
+    options.headless = True
+    browser = webdriver.Firefox(options=options)
+    browser.get(host)
+    cookies_list = browser.get_cookies()
+    browser.close()
+    cookies_str = ''
+    for cookie in cookies_list:
+        cookies_str = cookies_str + cookie['name'] + '=' + cookie['value'] + ';'
+    print('cookies:' + cookies_str)
+    headers_computer['Cookie'] = cookies_str
 
 
 def get_json(filename):
@@ -53,11 +73,21 @@ def get_response():
 
 
 def query_car():
+    response = get_response()
+    try:
+        response_dic = json.loads(response.content.decode('unicode-escape'))
+    except:
+        pass
+    else:
+        result_count = response_dic['total_matches_found']
+        my_logger.info(f"共返回{result_count}个结果")
+        if int(result_count) != 0:
+            analyze(response_dic)
+
+
+def analyze(response_dic):
     last_vin_info_dic = get_json('last_vin_info_dic.json')
     all_vin_info_dic = get_json('all_vin_info_dic.json')
-    response = get_response()
-    response_dic = json.loads(response.content.decode('unicode-escape'))
-    my_logger.info(f"共返回{response_dic['total_matches_found']}个结果")
     notify_carfind = []
     notify_pricechange = []
     notify_carsell = []
@@ -78,8 +108,8 @@ def query_car():
         vin_info_dic[车架号] = info_dic
         if 车架号 in last_vin_info_dic.keys():  # 如果车架号在上次查询的结果中
             if last_vin_info_dic[车架号]['售价'] != 售价:  # 如果价格有变化
-                my_logger.info(f"价格变化：之前售价{last_vin_info_dic[车架号]['售价']}，当前售价{售价}，调整幅度{str(int(last_vin_info_dic[车架号]['售价'])-int(售价))}，详细信息：{info_str}")
-                notify_pricechange.append(f"之前售价{last_vin_info_dic[车架号]['售价']}，当前售价{售价}，调整幅度{str(int(last_vin_info_dic[车架号]['售价'])-int(售价))}，详细信息：{info_str}")
+                my_logger.info(f"价格变化：之前售价{last_vin_info_dic[车架号]['售价']}，当前售价{售价}，调整幅度{str(int(last_vin_info_dic[车架号]['售价']) - int(售价))}，详细信息：{info_str}")
+                notify_pricechange.append(f"之前售价{last_vin_info_dic[车架号]['售价']}，当前售价{售价}，调整幅度{str(int(last_vin_info_dic[车架号]['售价']) - int(售价))}，详细信息：{info_str}")
 
         else:  # 如果不在库中，就是新上车源
             if 车架号 in all_vin_info_dic.keys():  # 如果车架号在所有查询的结果中,说明反复上架
@@ -111,5 +141,6 @@ def query_car():
 
 if __name__ == '__main__':
     while True:
+        get_cookie()
         query_car()
-        time.sleep(60 + random.randint(0, 10))
+        time.sleep(120 + random.randint(0, 10))
