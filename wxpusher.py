@@ -11,8 +11,8 @@ class WxPusherNoneTokenException(WxPusherException):
 
 class WxPusher:
   # 此处需要修改你自己的wxpusher信息
-    APP_TOKEN = "AT_XXXXXXXXXXXXXXXXXXX"
-    UIDS = ["UID_XXXXXXXXXXXXXXXXXX", ]
+    APP_TOKEN = "AT_yNxPLLdHgg7ttv8QG9bXjRlRHwNlAq7f"
+    UIDS = ["UID_4qbNgiZ9iptI5A7rVUNHV0RNjuQC", ]
 
     def __init__(self, app_token=APP_TOKEN, uids=None, topic_ids=None, verify_pay=False, url='', content_type=1):
         if topic_ids is None:
