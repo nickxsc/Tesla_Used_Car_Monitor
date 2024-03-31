@@ -15,7 +15,7 @@ urllib3.disable_warnings()  # 关闭https的ssl证书警告
 
 my_logger = components.Logger()
 my_file_operator = components.File_Operater()
-my_wxpusher = wxpusher.WxPusher(uids=["XXXXX"])
+my_wxpusher = wxpusher.WxPusher()
 
 PROXIES = [{}, {"http": "http://127.0.0.1:9090", "https": "http://127.0.0.1:9090"}, {"http": "http://127.0.0.1:9091", "https": "http://127.0.0.1:9091"}][2]  # 代理选项，0表示无代理，1表示burpsuite，2表示yakit
 NOTIFY_URL = "https://www.tesla.cn/inventory/used/my?Province=CN&FleetSalesRegions=CN&arrangeby=plh&zip=&range=0"
